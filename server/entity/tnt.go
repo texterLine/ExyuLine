@@ -1,0 +1,70 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package entity
+
+import (
+	"math"
+	"math/rand/v2"
+	"time"
+
+	"github.com/go-gl/mathgl/mgl64"
+	"github.com/texterLine/exyuline/server/block"
+	"github.com/texterLine/exyuline/server/block/cube"
+	"github.com/texterLine/exyuline/server/internal/nbtconv"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// NewTNT creates a new primed TNT entity.
+func NewTNT(opts world.EntitySpawnOpts, fuse time.Duration) *world.EntityHandle {
+	conf := tntConf
+	conf.ExistenceDuration = fuse
+	if opts.Velocity.Len() == 0 {
+		angle := rand.Float64() * math.Pi * 2
+		opts.Velocity = mgl64.Vec3{-math.Sin(angle) * 0.02, 0.1, -math.Cos(angle) * 0.02}
+	}
+	return opts.New(TNTType, conf)
+}
+
+var tntConf = PassiveBehaviourConfig{
+	Gravity: 0.04,
+	Drag:    0.02,
+	Expire:  explodeTNT,
+}
+
+// explodeTNT creates an explosion at the position of e.
+func explodeTNT(e *Ent, tx *world.Tx) {
+	block.ExplosionConfig{ItemDropChance: 1}.Explode(tx, world.EntityExplosionSource{
+		Entity:        e,
+		ExplosionSize: 4,
+	})
+}
+
+// TNTType is a world.EntityType implementation for TNT.
+var TNTType tntType
+
+type tntType struct{}
+
+func (t tntType) Open(tx *world.Tx, handle *world.EntityHandle, data *world.EntityData) world.Entity {
+	return &Ent{tx: tx, handle: handle, data: data}
+}
+
+func (tntType) EncodeEntity() string   { return "minecraft:tnt" }
+func (tntType) NetworkOffset() float64 { return 0.49 }
+func (tntType) BBox(world.Entity) cube.BBox {
+	return cube.Box(-0.49, 0, -0.49, 0.49, 0.98, 0.49)
+}
+
+func (t tntType) DecodeNBT(m map[string]any, data *world.EntityData) {
+	conf := tntConf
+	conf.ExistenceDuration = nbtconv.TickDuration[int16](m, "Fuse")
+	data.Data = conf.New()
+}
+
+func (tntType) EncodeNBT(data *world.EntityData) map[string]any {
+	return map[string]any{"Fuse": int16(min(data.Data.(*PassiveBehaviour).Fuse()/(time.Second/20), math.MaxInt16))}
+}

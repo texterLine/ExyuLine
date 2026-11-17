@@ -1,0 +1,78 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import (
+	"github.com/texterLine/exyuline/server/item"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// Sandstone is a solid block commonly found in deserts and beaches underneath sand.
+type Sandstone struct {
+	solid
+	bassDrum
+
+	// Type is the type of sandstone of the block.
+	Type SandstoneType
+
+	// Red specifies if the sandstone type is red or not. When set to true, the sandstone type will represent its
+	// red variant, for example red sandstone.
+	Red bool
+}
+
+// BreakInfo ...
+func (s Sandstone) BreakInfo() BreakInfo {
+	if s.Type == SmoothSandstone() {
+		return newBreakInfo(2, pickaxeHarvestable, pickaxeEffective, oneOf(s)).withBlastResistance(6)
+	}
+	return newBreakInfo(0.8, pickaxeHarvestable, pickaxeEffective, oneOf(s))
+}
+
+// EncodeItem ...
+func (s Sandstone) EncodeItem() (name string, meta int16) {
+	var prefix string
+	if s.Type != NormalSandstone() {
+		prefix = s.Type.String() + "_"
+	}
+	if s.Red {
+		return "minecraft:" + prefix + "red_sandstone", 0
+	}
+	return "minecraft:" + prefix + "sandstone", 0
+}
+
+// EncodeBlock ...
+func (s Sandstone) EncodeBlock() (string, map[string]any) {
+	var prefix string
+	if s.Type != NormalSandstone() {
+		prefix = s.Type.String() + "_"
+	}
+	if s.Red {
+		return "minecraft:" + prefix + "red_sandstone", nil
+	}
+	return "minecraft:" + prefix + "sandstone", nil
+}
+
+// SmeltInfo ...
+func (s Sandstone) SmeltInfo() item.SmeltInfo {
+	if s.Type == NormalSandstone() {
+		return newSmeltInfo(item.NewStack(Sandstone{Red: s.Red, Type: SmoothSandstone()}, 1), 0.1)
+	}
+	return item.SmeltInfo{}
+}
+
+// allSandstones returns a list of all sandstone block variants.
+func allSandstones() (c []world.Block) {
+	f := func(red bool) {
+		for _, t := range SandstoneTypes() {
+			c = append(c, Sandstone{Type: t, Red: red})
+		}
+	}
+	f(true)
+	f(false)
+	return
+}

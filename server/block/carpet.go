@@ -1,0 +1,85 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import (
+	"github.com/go-gl/mathgl/mgl64"
+	"github.com/texterLine/exyuline/server/block/cube"
+	"github.com/texterLine/exyuline/server/item"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// Carpet is a colourful block that can be obtained by killing/shearing sheep, or crafted using four string.
+type Carpet struct {
+	carpet
+	transparent
+	sourceWaterDisplacer
+
+	// Colour is the colour of the carpet.
+	Colour item.Colour
+}
+
+// FlammabilityInfo ...
+func (c Carpet) FlammabilityInfo() FlammabilityInfo {
+	return newFlammabilityInfo(30, 20, true)
+}
+
+// SideClosed ...
+func (Carpet) SideClosed(cube.Pos, cube.Pos, *world.Tx) bool {
+	return false
+}
+
+// BreakInfo ...
+func (c Carpet) BreakInfo() BreakInfo {
+	return newBreakInfo(0.1, alwaysHarvestable, nothingEffective, oneOf(c))
+}
+
+// EncodeItem ...
+func (c Carpet) EncodeItem() (name string, meta int16) {
+	return "minecraft:" + c.Colour.String() + "_carpet", 0
+}
+
+// EncodeBlock ...
+func (c Carpet) EncodeBlock() (name string, properties map[string]any) {
+	return "minecraft:" + c.Colour.String() + "_carpet", nil
+}
+
+// HasLiquidDrops ...
+func (Carpet) HasLiquidDrops() bool {
+	return true
+}
+
+// NeighbourUpdateTick ...
+func (c Carpet) NeighbourUpdateTick(pos, _ cube.Pos, tx *world.Tx) {
+	if _, ok := tx.Block(pos.Side(cube.FaceDown)).(Air); ok {
+		breakBlock(c, pos, tx)
+	}
+}
+
+// UseOnBlock handles not placing carpets on top of air blocks.
+func (c Carpet) UseOnBlock(pos cube.Pos, face cube.Face, _ mgl64.Vec3, tx *world.Tx, user item.User, ctx *item.UseContext) (used bool) {
+	pos, _, used = firstReplaceable(tx, pos, face, c)
+	if !used {
+		return
+	}
+
+	if _, ok := tx.Block(pos.Side(cube.FaceDown)).(Air); ok {
+		return
+	}
+
+	place(tx, pos, c, user, ctx)
+	return placed(ctx)
+}
+
+// allCarpet ...
+func allCarpet() (carpets []world.Block) {
+	for _, c := range item.Colours() {
+		carpets = append(carpets, Carpet{Colour: c})
+	}
+	return
+}

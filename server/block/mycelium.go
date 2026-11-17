@@ -1,0 +1,54 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import (
+	"math/rand/v2"
+
+	"github.com/texterLine/exyuline/server/block/cube"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// Mycelium is a variant of dirt that covers the surface of the mushroom fields biome.
+type Mycelium struct {
+	solid
+}
+
+// SoilFor ...
+func (m Mycelium) SoilFor(block world.Block) bool {
+	switch block.(type) {
+	case ShortGrass, Fern, DoubleTallGrass, Flower, DoubleFlower, NetherSprouts, PinkPetals, SugarCane, DeadBush, BambooSapling, Bamboo, RedShrub:
+		return true
+	}
+	return false
+}
+
+// RandomTick ...
+func (m Mycelium) RandomTick(pos cube.Pos, tx *world.Tx, r *rand.Rand) {
+	spreadDirt(m, pos, tx, r, -2)
+}
+
+// Shovel ...
+func (Mycelium) Shovel() (world.Block, bool) {
+	return DirtPath{}, true
+}
+
+// BreakInfo ...
+func (m Mycelium) BreakInfo() BreakInfo {
+	return newBreakInfo(0.6, alwaysHarvestable, shovelEffective, silkTouchOneOf(Dirt{}, m))
+}
+
+// EncodeItem ...
+func (Mycelium) EncodeItem() (name string, meta int16) {
+	return "minecraft:mycelium", 0
+}
+
+// EncodeBlock ...
+func (Mycelium) EncodeBlock() (string, map[string]any) {
+	return "minecraft:mycelium", nil
+}

@@ -1,0 +1,99 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package world
+
+import (
+	"encoding/binary"
+	"slices"
+
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
+)
+
+var (
+	// maxVanillaBiomeID is the highest ID used by vanilla biomes.
+	maxVanillaBiomeID int
+)
+
+// finaliseBiomeRegistry is called after all vanilla biomes have been registered.
+// It sets maxVanillaBiomeID to the highest ID found among them.
+// noinspection GoUnusedFunction
+//
+//lint:ignore U1000 Function is used through compiler directives.
+func finaliseBiomeRegistry() {
+	for _, b := range biomes {
+		id := b.EncodeBiome()
+		if id > maxVanillaBiomeID {
+			maxVanillaBiomeID = id
+		}
+	}
+}
+
+// BiomeDefinitions returns the list of biome definitions along with the associated StringList.
+func BiomeDefinitions() ([]protocol.BiomeDefinition, []string) {
+	var (
+		internedStrings     []string
+		internedStringIndex = make(map[string]int)
+	)
+
+	intern := func(s string) int {
+		if index, exists := internedStringIndex[s]; exists {
+			return index
+		}
+		index := len(internedStrings)
+		internedStrings = append(internedStrings, s)
+		internedStringIndex[s] = index
+		return index
+	}
+
+	ids := make([]int, 0, len(biomes))
+	for id := range biomes {
+		ids = append(ids, id)
+	}
+	slices.Sort(ids)
+
+	for _, id := range ids {
+		intern(biomes[id].String())
+	}
+
+	encodedBiomes := make([]protocol.BiomeDefinition, 0, len(biomes))
+	for _, id := range ids {
+		b := biomes[id]
+		nameIndex := intern(b.String())
+		tags := b.Tags()
+		tagIndices := make([]uint16, len(tags))
+		for i, tag := range tags {
+			tagIndices[i] = uint16(intern(tag))
+		}
+
+		var biomeID int16 = -1
+		if id > maxVanillaBiomeID {
+			biomeID = int16(id)
+		}
+
+		def := protocol.BiomeDefinition{
+			NameIndex:   int16(nameIndex),
+			BiomeID:     biomeID,
+			Temperature: float32(b.Temperature()),
+			Downfall:    float32(b.Rainfall()),
+			Depth:       float32(b.Depth()),
+			Scale:       float32(b.Scale()),
+			MapWaterColour: int32(binary.BigEndian.Uint32([]byte{
+				b.WaterColour().A,
+				b.WaterColour().R,
+				b.WaterColour().G,
+				b.WaterColour().B,
+			})),
+			Rain: b.Rainfall() > 0,
+			Tags: protocol.Option[[]uint16](tagIndices),
+		}
+
+		encodedBiomes = append(encodedBiomes, def)
+	}
+
+	return encodedBiomes, internedStrings
+}

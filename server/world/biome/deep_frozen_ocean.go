@@ -1,0 +1,53 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package biome
+
+import "image/color"
+
+// DeepFrozenOcean ...
+type DeepFrozenOcean struct{}
+
+// Temperature ...
+func (DeepFrozenOcean) Temperature() float64 {
+	return 0.5
+}
+
+// Rainfall ...
+func (DeepFrozenOcean) Rainfall() float64 {
+	return 0.5
+}
+
+// Depth ...
+func (DeepFrozenOcean) Depth() float64 {
+	return -1.8
+}
+
+// Scale ...
+func (DeepFrozenOcean) Scale() float64 {
+	return 0.1
+}
+
+// WaterColour ...
+func (DeepFrozenOcean) WaterColour() color.RGBA {
+	return color.RGBA{R: 0x25, G: 0x70, B: 0xb5, A: 0xa5}
+}
+
+// Tags ...
+func (DeepFrozenOcean) Tags() []string {
+	return []string{"deep", "frozen", "monster", "ocean", "overworld", "spawns_cold_variant_farm_animals", "spawns_cold_variant_frogs", "spawns_polar_bears_on_alternate_blocks", "fast_fishing", "high_seas"}
+}
+
+// String ...
+func (DeepFrozenOcean) String() string {
+	return "deep_frozen_ocean"
+}
+
+// EncodeBiome ...
+func (DeepFrozenOcean) EncodeBiome() int {
+	return 47
+}

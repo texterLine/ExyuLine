@@ -1,0 +1,50 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package item
+
+import (
+	"github.com/go-gl/mathgl/mgl64"
+	"github.com/texterLine/exyuline/server/block/cube"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// InkSac is an item dropped by a squid upon death used to create black dye, dark prismarine and book and quill. The
+// glowing variant, obtained by killing a glow squid, may be used to cause sign text to light up.
+type InkSac struct {
+	// Glowing specifies if the ink sac is that of a glow squid. If true, it may be used on a sign to light up its text.
+	Glowing bool
+}
+
+// UseOnBlock handles the logic of using an ink sac on a sign. Glowing ink sacs turn the text of these signs glowing,
+// whereas normal ink sacs revert them back to non-glowing text.
+func (i InkSac) UseOnBlock(pos cube.Pos, _ cube.Face, _ mgl64.Vec3, tx *world.Tx, user User, ctx *UseContext) bool {
+	if in, ok := tx.Block(pos).(inkable); ok {
+		if res, ok := in.Ink(pos, user.Position(), i.Glowing); ok {
+			tx.SetBlock(pos, res, nil)
+			ctx.SubtractFromCount(1)
+			return true
+		}
+	}
+	return false
+}
+
+// inkable represents a block that may be inked, either glowing or reverted from glowing, by using a (glow) ink sac
+// on it.
+type inkable interface {
+	// Ink uses an ink sac on the block, returning the resulting block and a bool specifying if inking the block was
+	// successful.
+	Ink(pos cube.Pos, userPos mgl64.Vec3, glowing bool) (world.Block, bool)
+}
+
+// EncodeItem ...
+func (i InkSac) EncodeItem() (name string, meta int16) {
+	if i.Glowing {
+		return "minecraft:glow_ink_sac", 0
+	}
+	return "minecraft:ink_sac", 0
+}

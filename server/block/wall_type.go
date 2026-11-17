@@ -1,0 +1,153 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import "github.com/texterLine/exyuline/server/world"
+
+// encodeWallBlock encodes the provided block in to an identifier and meta value that can be used to encode the wall.
+func encodeWallBlock(block world.Block) string {
+	switch block := block.(type) {
+	case Andesite:
+		if !block.Polished {
+			return "andesite"
+		}
+	case Blackstone:
+		if block.Type == NormalBlackstone() {
+			return "blackstone"
+		} else if block.Type == PolishedBlackstone() {
+			return "polished_blackstone"
+		}
+	case Bricks:
+		return "brick"
+	case Cinnabar:
+		if !block.Chiseled {
+			return "cinnabar"
+		}
+	case CinnabarBricks:
+		return "cinnabar_brick"
+	case Cobblestone:
+		if block.Mossy {
+			return "mossy_cobblestone"
+		}
+		return "cobblestone"
+	case Deepslate:
+		if block.Type == CobbledDeepslate() {
+			return "cobbled_deepslate"
+		} else if block.Type == PolishedDeepslate() {
+			return "polished_deepslate"
+		}
+	case DeepslateBricks:
+		if !block.Cracked {
+			return "deepslate_brick"
+		}
+	case DeepslateTiles:
+		if !block.Cracked {
+			return "deepslate_tile"
+		}
+	case Diorite:
+		if !block.Polished {
+			return "diorite"
+		}
+	case EndBricks:
+		return "end_stone_brick"
+	case Granite:
+		if !block.Polished {
+			return "granite"
+		}
+	case MudBricks:
+		return "mud_brick"
+	case NetherBricks:
+		if block.Type == NormalNetherBricks() {
+			return "nether_brick"
+		} else if block.Type == RedNetherBricks() {
+			return "red_nether_brick"
+		}
+	case PolishedBlackstoneBrick:
+		if !block.Cracked {
+			return "polished_blackstone_brick"
+		}
+	case PolishedCinnabar:
+		return "polished_cinnabar"
+	case PolishedSulfur:
+		return "polished_sulfur"
+	case PolishedTuff:
+		return "polished_tuff"
+	case Prismarine:
+		if block.Type == NormalPrismarine() {
+			return "prismarine"
+		}
+	case ResinBricks:
+		return "resin_brick"
+	case Sandstone:
+		if block.Type == NormalSandstone() {
+			if block.Red {
+				return "red_sandstone"
+			}
+			return "sandstone"
+		}
+	case StoneBricks:
+		if block.Type == NormalStoneBricks() {
+			return "stone_brick"
+		} else if block.Type == MossyStoneBricks() {
+			return "mossy_stone_brick"
+		}
+	case Sulfur:
+		if !block.Chiseled {
+			return "sulfur"
+		}
+	case SulfurBricks:
+		return "sulfur_brick"
+	case Tuff:
+		if !block.Chiseled {
+			return "tuff"
+		}
+	case TuffBricks:
+		if !block.Chiseled {
+			return "tuff_brick"
+		}
+	}
+	panic("invalid block used for wall")
+}
+
+// WallBlocks returns a list of all possible blocks for a wall.
+func WallBlocks() []world.Block {
+	return []world.Block{
+		Andesite{},
+		Blackstone{Type: PolishedBlackstone()},
+		Blackstone{},
+		Bricks{},
+		Cinnabar{},
+		CinnabarBricks{},
+		Cobblestone{Mossy: true},
+		Cobblestone{},
+		DeepslateBricks{},
+		DeepslateTiles{},
+		Deepslate{Type: CobbledDeepslate()},
+		Deepslate{Type: PolishedDeepslate()},
+		Diorite{},
+		EndBricks{},
+		Granite{},
+		MudBricks{},
+		NetherBricks{Type: RedNetherBricks()},
+		NetherBricks{},
+		PolishedBlackstoneBrick{},
+		PolishedCinnabar{},
+		PolishedSulfur{},
+		PolishedTuff{},
+		Prismarine{},
+		ResinBricks{},
+		Sandstone{Red: true},
+		Sandstone{},
+		StoneBricks{Type: MossyStoneBricks()},
+		StoneBricks{},
+		Sulfur{},
+		SulfurBricks{},
+		Tuff{},
+		TuffBricks{},
+	}
+}

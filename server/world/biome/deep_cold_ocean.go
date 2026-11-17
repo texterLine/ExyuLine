@@ -1,0 +1,53 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package biome
+
+import "image/color"
+
+// DeepColdOcean ...
+type DeepColdOcean struct{}
+
+// Temperature ...
+func (DeepColdOcean) Temperature() float64 {
+	return 0.5
+}
+
+// Rainfall ...
+func (DeepColdOcean) Rainfall() float64 {
+	return 0.5
+}
+
+// Depth ...
+func (DeepColdOcean) Depth() float64 {
+	return -1.8
+}
+
+// Scale ...
+func (DeepColdOcean) Scale() float64 {
+	return 0.1
+}
+
+// WaterColour ...
+func (DeepColdOcean) WaterColour() color.RGBA {
+	return color.RGBA{R: 0x20, G: 0x80, B: 0xc9, A: 0xa5}
+}
+
+// Tags ...
+func (DeepColdOcean) Tags() []string {
+	return []string{"cold", "deep", "monster", "ocean", "overworld", "spawns_cold_variant_farm_animals", "fast_fishing", "high_seas"}
+}
+
+// String ...
+func (DeepColdOcean) String() string {
+	return "deep_cold_ocean"
+}
+
+// EncodeBiome ...
+func (DeepColdOcean) EncodeBiome() int {
+	return 45
+}

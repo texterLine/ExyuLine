@@ -1,0 +1,76 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import (
+	"github.com/texterLine/exyuline/server/block/cube"
+	"github.com/texterLine/exyuline/server/block/model"
+	"github.com/texterLine/exyuline/server/world"
+	"github.com/texterLine/exyuline/server/world/portal"
+)
+
+// Portal is the translucent part of the nether portal that teleports the player to and from the Nether.
+type Portal struct {
+	transparent
+
+	// Axis is the axis which the portal faces.
+	Axis cube.Axis
+}
+
+// portalTraveller represents an entity that can handle touching a portal block.
+type portalTraveller interface {
+	TravelThroughPortal(tx *world.Tx, target world.Dimension)
+}
+
+// Model ...
+func (p Portal) Model() world.BlockModel {
+	return model.Portal{Axis: p.Axis}
+}
+
+// Portal ...
+func (Portal) Portal() world.Dimension {
+	return world.Nether
+}
+
+// LightEmissionLevel returns 11.
+func (Portal) LightEmissionLevel() uint8 {
+	return 11
+}
+
+// HasLiquidDrops ...
+func (p Portal) HasLiquidDrops() bool {
+	return false
+}
+
+// EncodeBlock ...
+func (p Portal) EncodeBlock() (string, map[string]any) {
+	return "minecraft:portal", map[string]any{"portal_axis": p.Axis.String()}
+}
+
+// NeighbourUpdateTick ...
+func (p Portal) NeighbourUpdateTick(pos, neighbour cube.Pos, tx *world.Tx) {
+	face, ok := pos.NeighbourFace(neighbour)
+	if !ok {
+		return
+	}
+	axis := face.Axis()
+	if axis != cube.Y && axis != p.Axis {
+		return
+	}
+	if n, ok := portal.NetherPortalFromPos(tx, pos); ok && n.Framed() && n.Activated() {
+		return
+	}
+	portal.DeactivateNetherPortal(tx, pos)
+}
+
+// EntityInside ...
+func (p Portal) EntityInside(_ cube.Pos, tx *world.Tx, e world.Entity) {
+	if t, ok := e.(portalTraveller); ok {
+		t.TravelThroughPortal(tx, p.Portal())
+	}
+}

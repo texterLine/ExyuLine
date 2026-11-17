@@ -1,0 +1,64 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package block
+
+import (
+	"github.com/texterLine/exyuline/server/item"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// Obsidian is a dark purple block known for its high blast resistance and strength, most commonly found when
+// water flows over lava.
+type Obsidian struct {
+	solid
+	bassDrum
+	// Crying specifies if the block is a crying obsidian block. If true, the block is blue and emits light.
+	Crying bool
+}
+
+// LightEmissionLevel ...
+func (o Obsidian) LightEmissionLevel() uint8 {
+	if o.Crying {
+		return 10
+	}
+	return 0
+}
+
+// EncodeItem ...
+func (o Obsidian) EncodeItem() (name string, meta int16) {
+	if o.Crying {
+		return "minecraft:crying_obsidian", 0
+	}
+	return "minecraft:obsidian", 0
+}
+
+// EncodeBlock ...
+func (o Obsidian) EncodeBlock() (string, map[string]any) {
+	if o.Crying {
+		return "minecraft:crying_obsidian", nil
+	}
+	return "minecraft:obsidian", nil
+}
+
+// Frame returns true if the block can form part of a nether portal frame in the dimension passed. Crying obsidian
+// cannot be used as a frame block.
+func (o Obsidian) Frame(dimension world.Dimension) bool {
+	return dimension == world.Nether && !o.Crying
+}
+
+// SupportsEndCrystal returns whether an End crystal may be placed on the obsidian.
+func (o Obsidian) SupportsEndCrystal() bool {
+	return !o.Crying
+}
+
+// BreakInfo ...
+func (o Obsidian) BreakInfo() BreakInfo {
+	return newBreakInfo(35, func(t item.Tool) bool {
+		return t.ToolType() == item.TypePickaxe && t.HarvestLevel() >= item.ToolTierDiamond.HarvestLevel
+	}, pickaxeEffective, oneOf(o)).withBlastResistance(1200)
+}

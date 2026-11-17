@@ -1,0 +1,72 @@
+// ExyuLine Software - Copyright (c) 2026 texterLine - https://github.com/texterLine
+// All modifications, additions and original work by texterLine are the exclusive intellectual property of
+// texterLine. Unauthorized copying, redistribution or removal of this notice is strictly prohibited and
+// will be pursued to the full extent of the law.
+// Portions of this software derive from Dragonfly (Copyright (c) 2019 Dragonfly Tech), used under the MIT
+// License, whose copyright and license notices are preserved in the LICENSE file.
+
+package entity
+
+import (
+	"github.com/texterLine/exyuline/server/item"
+	"github.com/texterLine/exyuline/server/item/enchantment"
+	"github.com/texterLine/exyuline/server/item/potion"
+	"github.com/texterLine/exyuline/server/world"
+)
+
+// DefaultRegistry is a world.EntityRegistry that registers all default entities
+// implemented by ExyuLine.
+var DefaultRegistry = conf.New([]world.EntityType{
+	AreaEffectCloudType,
+	ArrowType,
+	BottleOfEnchantingType,
+	EggType,
+	EndCrystalType,
+	EnderPearlType,
+	ExperienceOrbType,
+	FallingBlockType,
+	FireworkType,
+	ItemType,
+	LightningType,
+	LingeringPotionType,
+	SnowballType,
+	SplashPotionType,
+	TNTType,
+	TextType,
+})
+
+var conf = world.EntityRegistryConfig{
+	TNT:                NewTNT,
+	Egg:                NewEgg,
+	EndCrystal:         NewEndCrystal,
+	Snowball:           NewSnowball,
+	BottleOfEnchanting: NewBottleOfEnchanting,
+	EnderPearl:         NewEnderPearl,
+	FallingBlock:       NewFallingBlock,
+	Lightning:          NewLightning,
+	Firework: func(opts world.EntitySpawnOpts, firework world.Item, owner world.Entity, sidewaysVelocityMultiplier, upwardsAcceleration float64, attached bool) *world.EntityHandle {
+		return newFirework(opts, firework.(item.Firework), owner, sidewaysVelocityMultiplier, upwardsAcceleration, attached)
+	},
+	Item: func(opts world.EntitySpawnOpts, it any) *world.EntityHandle {
+		return NewItem(opts, it.(item.Stack))
+	},
+	LingeringPotion: func(opts world.EntitySpawnOpts, t any, owner world.Entity) *world.EntityHandle {
+		return NewLingeringPotion(opts, t.(potion.Potion), owner)
+	},
+	SplashPotion: func(opts world.EntitySpawnOpts, t any, owner world.Entity) *world.EntityHandle {
+		return NewSplashPotion(opts, t.(potion.Potion), owner)
+	},
+	Arrow: func(opts world.EntitySpawnOpts, arrow world.ArrowSpawnConfig) *world.EntityHandle {
+		tip := arrow.Tip.(potion.Potion)
+		conf := arrowConf
+		conf.Damage, conf.Potion, conf.Owner = arrow.Damage, tip, arrow.Owner.H()
+		conf.KnockBackForceAddend = float64(arrow.PunchLevel) * enchantment.Punch.KnockBackMultiplier()
+		conf.DisablePickup = arrow.DisablePickup
+		if arrow.ObtainArrowOnPickup {
+			conf.PickupItem = item.NewStack(item.Arrow{Tip: tip}, 1)
+		}
+		conf.Critical = arrow.Critical
+		conf.PiercingLevel = arrow.PiercingLevel
+		return opts.New(ArrowType, conf)
+	},
+}
