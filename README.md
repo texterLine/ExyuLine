@@ -1,5 +1,5 @@
 <!--suppress ALL -->
-<img height="310" alt="image" src="https://user-images.githubusercontent.com/16114089/121805566-0cd81280-cc4c-11eb-9b7d-b5f8a6db4f8d.png" align="right">
+<img height="310" alt="image" src="https://cdn.discordapp.com/attachments/1483894224490332295/1572351374660731002/rn_image_picker_lib_temp_c53e5357-26aa-42b9-8988-06f058ce4f19.png?ex=6afe0dd4&is=6afcbc54&hm=4d7ca0c0d8e8f2f19fe698afd3e6c1d70024d3e560de820f412754127f2a5856&" align="right">
 
 # ExyuLine Software
 
@@ -7,7 +7,6 @@ ExyuLine is a heavily asynchronous server software for Minecraft: Bedrock Editio
 and simplicity in mind and aims to make the process of setting up a server and modifying it easy. Unlike other
 Minecraft server software, ExyuLine is generally used as a library to extend.
 
-[![Discord Banner 2](https://discordapp.com/api/guilds/623638955262345216/widget.png?style=banner2)](https://discord.gg/U4kFWHhTNR)
 
 ## Getting started
 Running ExyuLine requires at least **Go 1.26**. After starting the server through one of the methods below,
@@ -20,16 +19,12 @@ go mod init github.com/user/module
 go get github.com/texterLine/exyuline
 ```
 
-![SetupLibrary](https://user-images.githubusercontent.com/16114089/121804512-0f843900-cc47-11eb-9320-d195393b5a1f.gif)
-
 #### Installation of the latest commit
 ```shell
 git clone https://github.com/texterLine/exyuline
 cd exyuline
 go run main.go
 ```
-
-![SetupClone](https://user-images.githubusercontent.com/16114089/121804495-ff6c5980-cc46-11eb-8e31-df4d94782e5b.gif)
 
 ## Developer info
 [![Go Reference](https://pkg.go.dev/badge/github.com/texterLine/exyuline/server.svg)](https://pkg.go.dev/github.com/texterLine/exyuline/server)
